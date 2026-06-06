@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Monitoring System - Live</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .video-container {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .video-feed {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .status-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .status-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .status-card h3 {
+            color: #333;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .status-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .status-value.safe {
+            color: #10b981;
+        }
+
+        .status-value.warning {
+            color: #f59e0b;
+        }
+
+        .status-value.danger {
+            color: #ef4444;
+        }
+
+        .metric {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        .indicator.green {
+            background: #10b981;
+        }
+
+        .indicator.yellow {
+            background: #f59e0b;
+        }
+
+        .indicator.red {
+            background: #ef4444;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .info-section {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .info-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .info-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .info-section li {
+            padding: 8px 0;
+            color: #666;
+            display: flex;
+            align-items: center;
+        }
+
+        .info-section li:before {
+            content: "✓";
+            color: #10b981;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚗 Driver Monitoring System</h1>
+            <p>Real-time AI-powered safety monitoring</p>
+        </div>
+
+        <div class="content">
+            <!-- Live Video Feed -->
+            <div class="video-container">
+                <img src="{{ url_for('video_feed') }}" class="video-feed" alt="Live Video Feed">
+            </div>
+
+            <!-- Status Cards -->
+            <div class="status-grid">
+                <div class="status-card">
+                    <h3>👁️ Eye Status</h3>
+                    <div id="eyes-status" class="status-value safe">OPEN</div>
+                    <div class="metric">EAR: <span id="ear-value">0.00</span></div>
+                </div>
+
+                <div class="status-card">
+                    <h3>🥱 Yawning</h3>
+                    <div id="yawn-status" class="status-value safe">NO</div>
+                    <div class="metric">MAR: <span id="mar-value">0.00</span></div>
+                </div>
+
+                <div class="status-card">
+                    <h3>📱 Phone Detection</h3>
+                    <div id="phone-status" class="status-value safe">NOT DETECTED</div>
+                </div>
+
+                <div class="status-card">
+                    <h3>🎯 Overall Status</h3>
+                    <div id="overall-status" class="status-value safe">
+                        <span class="indicator green"></span>SAFE
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info Section -->
+            <div class="info-section">
+                <h3>ℹ️ System Information</h3>
+                <ul>
+                    <li>Real-time face detection using MediaPipe</li>
+                    <li>Eye closure detection with EAR algorithm</li>
+                    <li>Yawning detection with MAR algorithm</li>
+                    <li>Phone detection using YOLOv8</li>
+                    <li>Audio alerts on unsafe conditions</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Built with ❤️ for safer roads | Press Ctrl+C in terminal to stop</p>
+        </div>
+    </div>
+
+    <script>
+        // Update status every 500ms
+        setInterval(function() {
+            fetch('/status')
+                .then(response => response.json())
+                .then(data => {
+                    // Update eyes
+                    const eyesEl = document.getElementById('eyes-status');
+                    eyesEl.textContent = data.eyes;
+                    eyesEl.className = 'status-value ' + (data.eyes === 'OPEN' ? 'safe' : 'danger');
+                    document.getElementById('ear-value').textContent = data.ear.toFixed(2);
+
+                    // Update yawn
+                    const yawnEl = document.getElementById('yawn-status');
+                    yawnEl.textContent = data.yawning;
+                    yawnEl.className = 'status-value ' + (data.yawning === 'NO' ? 'safe' : 'warning');
+                    document.getElementById('mar-value').textContent = data.mar.toFixed(2);
+
+                    // Update phone
+                    const phoneEl = document.getElementById('phone-status');
+                    phoneEl.textContent = data.phone;
+                    phoneEl.className = 'status-value ' + (data.phone === 'NOT DETECTED' ? 'safe' : 'danger');
+
+                    // Update overall status
+                    const statusEl = document.getElementById('overall-status');
+                    let statusClass = 'safe';
+                    let indicatorClass = 'green';
+                    
+                    if (data.status === 'DROWSY' || data.status === 'DISTRACTED') {
+                        statusClass = 'danger';
+                        indicatorClass = 'red';
+                    } else if (data.status === 'FATIGUED') {
+                        statusClass = 'warning';
+                        indicatorClass = 'yellow';
+                    }
+                    
+                    statusEl.className = 'status-value ' + statusClass;
+                    statusEl.innerHTML = `<span class="indicator ${indicatorClass}"></span>${data.status}`;
+                })
+                .catch(error => console.error('Error fetching status:', error));
+        }, 500);
+    </script>
+</body>
+</html>
